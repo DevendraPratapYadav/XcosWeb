@@ -1,0 +1,308 @@
+<!--
+  Devendra Pratap Yadav
+  2014csb1010@iitrpr.ac.in
+  
+  
+  
+  References/ Sources
+  1. https://jgraph.github.io/mxgraph/docs/js-api/files/util/mxConstants-js.html
+  2. http://jgraph.github.io/mxgraph/javascript/examples/dynamicstyle.html
+  3. https://jgraph.github.io/mxgraph/docs/js-api/files/util/mxEvent-js.html	
+  4. https://jgraph.github.io/mxgraph/javascript/examples/ports.html
+  5. https://jgraph.github.io/mxgraph/javascript/
+  
+  
+-->
+<html>
+<head>
+	<title>Xcos on Web</title>
+
+	<script type="text/javascript">
+		mxBasePath = 'src';
+	</script>
+
+	<!-- load the mxGraph library -->
+	<script type="text/javascript" src="src/js/mxClient.js"></script>
+
+	<!-- Main program code -->
+	<script type="text/javascript">
+		
+		<!-- code to execute onLoad-->
+		function main(container)
+		{
+			// Checks if the browser is supported
+			if (!mxClient.isBrowserSupported())
+			{
+				// Displays an error message if the browser is not supported.
+				mxUtils.error('Browser is not supported!', 200, false);
+			}
+			else
+			{
+				// Disables the built-in context menu
+				mxEvent.disableContextMenu(container);
+				
+				// Creates the graph inside the given container
+				var graph = new mxGraph(container);
+
+				graph.setDisconnectOnMove(false);
+			   // graph.setEnabled(false);
+				 
+				// set maximum bounds for window
+				graph.maximumGraphBounds = new mxRectangle(0, 0, 600, 400)
+				
+				// Enables rubberband selection
+				new mxRubberband(graph);
+				
+				
+				var parent = graph.getDefaultParent();
+
+					
+				// define a style for the vertex with images	
+				var style = new Object();
+				
+				style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE;
+				style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
+				style[mxConstants.STYLE_IMAGE] = 'palettes/TIME_f.png';
+				style[mxConstants.STYLE_ROUNDED] = true;
+				style[mxConstants.STYLE_FONTCOLOR] = '#000000';
+				//style[mxConstants.STYLE_PORT_CONSTRAINT] = 'DIRECTION_NORTH, DIRECTION_SOUTH, DIRECTION_EAST,DIRECTION_WEST';
+				graph.getStylesheet().putCellStyle('clock', style);
+				
+				
+				// clone and modify for each vertex 
+				var stylesin=mxUtils.clone(style);
+				stylesin[mxConstants.STYLE_IMAGE] = 'palettes/SINBLK_f.png';
+				graph.getStylesheet().putCellStyle('sin', stylesin);
+				
+				var stylecos=mxUtils.clone(style);
+				stylecos[mxConstants.STYLE_IMAGE] = 'palettes/COSBLK_f.png';
+				graph.getStylesheet().putCellStyle('cos', stylecos);
+				
+				var styleanim=mxUtils.clone(style);
+				styleanim[mxConstants.STYLE_IMAGE] = 'palettes/CANIMXY3D_S.png';
+				
+				/*styleanim[mxConstants.STYLE_IMAGE_WIDTH] = 50;
+				styleanim[mxConstants.STYLE_IMAGE_HEIGHT] = 150;
+				styleanim[mxConstants.STYLE_IMAGE_ASPECT] = 0;
+				*/
+				graph.getStylesheet().putCellStyle('anim', styleanim);
+				
+				var styletimer=mxUtils.clone(style);
+				styletimer[mxConstants.STYLE_IMAGE] = 'palettes/CLOCK_c.png';
+				graph.getStylesheet().putCellStyle('timer', styletimer);
+				
+				
+				
+							
+				/*var edgestyle = new Object();	
+
+							
+				edgestyle[mxConstants.STYLE_EDGE]='EDGESTYLE_ENTITY_RELATION';		
+				graph.getStylesheet().putCellStyle('edgestyle', edgestyle);
+				*/
+				
+				
+				// add Double click listener to open properties for Animated Viewer
+				graph.addListener(mxEvent.DOUBLE_CLICK, function(sender, evt)
+				{
+					var content = document.createElement('div');
+					var cell = evt.getProperty('cell');	
+				    var idd=cell.getId();
+					
+					// only open for anim vertex
+					if (idd=='anim')
+					{		
+							
+							content.innerHTML = '<form name=input> Number of Curves :  <input type=text class=inp value=1 id=i1><br>'+ 
+							'<br>	color(>0) or mark(<0) :  <input type=text class=inp value="1 2 3 4 5" id=i2><br>'+ 
+							'<br>	line or mark size :  <input type=text class=inp value="1 1 1 1 1" id=i3><br>'+	
+							'<br>	Output Window Number :  <input type=text class=inp value="-1" id=i4><br>'+
+							'<br>	Output Window position :  <input type=text class=inp value="0" id=i5><br>'+
+							'<br>	Output Window sizes :  <input type=text class=inp value="0" id=i6><br>'+
+							'<br>	Xmin and Xmax :  <input type=text class=inp value="-15 15" id=i7><br>'+
+							'<br>	Ymin and Ymax :  <input type=text class=inp value="-15 15" id=i8><br>'+
+							'<br>	Zmin and Zmax :  <input type=text class=inp value="-15 15" id=i9><br>'+
+							'<br>	Alpha and Theta :  <input type=text class=inp value="51 348" id=i10><br>'+
+							'<br>	Buffer Size :  <input type=text class=inp value="2" id=i11><br>'+
+							'<br>	<input type=button class=but value=Save onClick=doStorage()> <input type=button class=but value=Cancel onClick=getStorage()> </form>';
+						
+						    // show the new window
+							showProperties(this, 'Properties', content, 400, 400);
+					}
+								
+					evt.consume();
+				});
+			
+			
+		
+			
+			
+				// Adds cells to the model
+				graph.getModel().beginUpdate();
+				try
+				{
+					// add the vertices and edges with proper style settings
+					var v1 = graph.insertVertex(parent, 'clock', '', 50, 150, 50, 50,'clock');
+					   
+					var v2 = graph.insertVertex(parent, 'sin', '', 200, 200, 50, 50,'sin');
+					var v3 = graph.insertVertex(parent, 'cos', '', 220, 150, 50, 50,'cos');
+					var v4 = graph.insertVertex(parent, 'anim', '', 350, 123, 50, 200,'anim');
+					
+					var v5 = graph.insertVertex(parent, 'timer', '', 350, 20, 50, 50,'timer');
+					
+					
+					var e1 = graph.insertEdge(parent, null, '', v1, v2,'edgeStyle=orthogonalEdgeStyle;entryX=0.0;entryY=0.5;exitX=1;exitY=0.5');
+					e1.geometry.points = [new mxPoint(150, 175)]; // fixed point for connection A
+				
+					
+					var e2 = graph.insertEdge(parent, null, '', v1, v3,'edgeStyle=orthogonalEdgeStyle;entryX=0.0;entryY=0.5;exitX=1;exitY=0.5');
+					e2.geometry.points = [new mxPoint(150, 175)];// fixed point for connection A
+					
+						
+						
+					var e3 = graph.insertEdge(parent, null, '', v3, v4,'edgeStyle=orthogonalEdgeStyle;entryX=0.0;entryY=0.26;exitX=0.5;exitY=0.5');
+					var e4 = graph.insertEdge(parent, null, '', v3, v4,'edgeStyle=orthogonalEdgeStyle;entryX=0.0;entryY=0.76;exitX=0.5;exitY=0.5');
+					e3.geometry.points = [new mxPoint(300, 175)];// fixed point for connection B
+					e4.geometry.points = [new mxPoint(300, 175)];// fixed point for connection B
+					
+					var e5 = graph.insertEdge(parent, null, '', v2, v4,'strokeColor=#000000;edgeStyle=orthogonalEdgeStyle;entryX=0.0;entryY=0.49;exitX=0.5;exitY=0.5');
+					
+					var e6 = graph.insertEdge(parent, null, '', v5, v4,'strokeColor=#cc5555;edgeStyle=orthogonalEdgeStyle;entryX=0.53;entryY=0;exitX=0.5;exitY=1');
+					
+				}
+				finally
+				{
+					// Updates the display
+					graph.getModel().endUpdate();
+				}
+			}
+		};
+		
+		
+		
+		// retrieve the input values and show them in input fields
+		// Use HTML local storage
+		function getStorage()
+		{
+		
+		
+		
+		var nav=document.querySelectorAll(".inp");
+
+		for(var i=0;i<nav.length;i++)
+		{ 
+		
+		  var no = localStorage.getItem("i"+nav[i].id);
+		  
+		  if (no==null)
+		  { localStorage.setItem("i"+nav[i].id,nav[i].value);
+			
+		  }
+		  no = localStorage.getItem("i"+nav[i].id);
+		  console.log('Retrieved '+i+' : '+no);
+		  nav[i].value=(no);
+		
+		}
+  
+		};
+		
+		
+		// store the input values to local Storage
+		function doStorage()
+		{
+		
+		var nav=document.querySelectorAll(".inp");
+
+		for(var i=0;i<nav.length;i++)
+		{ 
+		
+		  var val = nav[i].value;
+		  
+			localStorage.setItem("i"+nav[i].id,val);
+		 
+			console.log('setting: '+i+' : '+val);
+		  
+		
+		}
+		
+		};
+		
+		
+		
+		// show the modal window 
+		function showProperties(graph, title, content, width, height)
+		{
+			var back = document.createElement('div');
+			back.style.position = 'absolute';
+			back.style.left = '0px';
+			back.style.top = '0px';
+			back.style.right = '0px';
+			back.style.bottom = '0px';
+			back.style.background = 'grey';
+			mxUtils.setOpacity(back, 30);
+			document.body.appendChild(back);
+			
+			if (mxClient.IS_IE)
+			{
+				new mxDivResizer(background);
+			}
+			
+			// create window in center of page
+			var x = Math.max(0, document.body.scrollWidth/2-width/2);
+			var y = Math.max(50, (document.body.scrollHeight || document.documentElement.scrollHeight)/2-height*2/3);
+			var wnd = new mxWindow(title, content, x, y, width, height, false, true);
+			wnd.setClosable(true);
+			
+			getStorage();
+			
+			// Fades the background out after after the window has been closed
+			wnd.addListener(mxEvent.DESTROY, function(evt)
+			{
+				graph.setEnabled(true);
+				mxEffects.fadeOut(back, 50, true, 
+					10, 30, true);
+			});
+
+			graph.setEnabled(false);
+			graph.tooltipHandler.hide();
+			wnd.setVisible(true);
+		};
+		
+		
+	</script>
+	
+	<style>
+	.inp {
+	 position: relative;
+	 float:right;
+	 margin-right:50px;
+	
+	 
+	 
+	}
+	form
+	{
+	 position:relative;
+	 margin-left:20px;
+	  margin-top:20px;
+	}
+	
+	.but
+	{
+	 position:relative;
+	 margin-left:100px;
+	}
+	
+	
+	</style>
+	
+	
+</head>
+
+<body onload="main(document.getElementById('graphContainer'))">
+
+	<div id="graphContainer"
+		style="position:relative;overflow:hidden;width:600px;height:400px;background:url('palettes/grid.gif');cursor:default;">
+	</div>
+</body>
+</html>
